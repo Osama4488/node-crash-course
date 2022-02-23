@@ -31,6 +31,8 @@ app.set("view engine", "ejs");
 //   next();
 // });
 app.use(express.static("public"));
+// this is for accepting forms data (REALLY IMPORTANT)
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 // end
 
@@ -99,8 +101,42 @@ app.get("/blogs", (req, res) => {
     });
 });
 
+app.post("/blogs", (req, res) => {
+  const blog = new Blog(req.body);
+  blog
+    .save()
+    .then((result) => {
+      res.redirect("/blogs");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 app.get("/blogs/create", (req, res) => {
   res.render("create", { title: "Blog Create" });
+});
+
+app.get("/blogs/:id", (req, res) => {
+  const id = req.params.id;
+
+  Blog.findById(id)
+    .then((result) => {
+      res.render("details", { blog: result, title: "Blog Details" });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.delete("/blogs/:id", (req, res) => {
+  const id = req.params.id;
+  Blog.findByIdAndDelete(id)
+    .then((result) => {
+      res.json({ redirect: "/blogs" });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 // 404 page
